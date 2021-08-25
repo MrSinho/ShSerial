@@ -15,6 +15,7 @@ typedef enum FggSerialFlags {
   FGG_SERIAL_WRITE_BIT = GENERIC_WRITE
 #endif
 
+
 } FggSerialFlags;
 
 

@@ -1,15 +1,13 @@
 language: c
 compiler: gcc
 
-os: linux
-dist: xenial
-sudo: require
+os: windows
 
 before_script:
-  - sudo apt-get install -y gcc cmake make
+  - mingw-get install gcc mingw32-make
   - mkdir build
   - cd build
   - cmake -DFGG_SERIAL_BUILD_EXAMPLE=ON ..
 
 script:
-  - make
+  - mingw32-make
