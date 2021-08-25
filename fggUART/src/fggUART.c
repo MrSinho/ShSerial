@@ -9,7 +9,6 @@ void fggSerialOpen(const char* port, const FggSerialFlags flags, FggSerialHandle
 #ifdef _WIN32
 	char _port[8] = "\\\\.\\";
 	strcat(_port, port);
-	puts(_port);
 	handle._handle = CreateFileA(_port, flags, 0, NULL, OPEN_EXISTING, 0, NULL);
 #ifndef NDEBUG
 	if (handle._handle == INVALID_HANDLE_VALUE) {
