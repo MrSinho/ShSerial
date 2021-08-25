@@ -2,8 +2,14 @@
 #define FGG_UART_H
 
 #ifdef _WIN32
-  #include <windows.h>
-#endif
+#include <windows.h>
+#endif // _WIN32
+
+#ifdef __linux__
+#include <unistd.h>
+#include <termios.h>
+#include <fcntl.h>
+#endif // UNIX
 
 #include <stdint.h>
 
@@ -12,8 +18,13 @@ typedef enum FggSerialFlags {
 
 #ifdef _WIN32
   FGG_SERIAL_READ_BIT  = GENERIC_READ,
-  FGG_SERIAL_WRITE_BIT = GENERIC_WRITE
-#endif
+  FGG_SERIAL_WRITE_BIT = GENERIC_WRITE,
+#endif // _WIN32
+
+#ifdef __linux__
+  FGG_SERIAL_READ_BIT   = 0b00001,
+  FGG_SERIAL_WRITE_BIT  = 0b00010,
+#endif // UNIX
 
 
 } FggSerialFlags;
@@ -25,10 +36,14 @@ typedef struct FggSerialHandle {
   HANDLE _handle;
 #endif
 
+#ifdef __linux__
+  int descriptor;
+#endif // UNIX
+
 } FggSerialHandle;
 
 
-extern void fggSerialOpen(const char* port, const FggSerialFlags flags, FggSerialHandle handle);
+extern void fggSerialOpen(const char* port, const uint16_t baudRate, const FggSerialFlags flags, FggSerialHandle handle);
 
 extern void fggSerialClose(FggSerialHandle handle);
 

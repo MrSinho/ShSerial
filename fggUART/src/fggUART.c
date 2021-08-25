@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void fggSerialOpen(const char* port, const FggSerialFlags flags, FggSerialHandle handle) {
+void fggSerialOpen(const char* port, const uint16_t baudRate, const FggSerialFlags flags, FggSerialHandle handle) {
 
 #ifdef _WIN32
 	char _port[8] = "\\\\.\\";
@@ -17,6 +17,24 @@ void fggSerialOpen(const char* port, const FggSerialFlags flags, FggSerialHandle
 	}
 #endif // NDEBUG
 #endif // _WIN32
+
+
+#ifdef __linux__
+	uint8_t _flags = 0;
+	switch(flags) {
+	  case FGG_SERIAL_READ_BIT: _flags = O_RDONLY; break;
+	  case FGG_SERIAL_WRITE_BIT: _flags = O_WRONLY; break;
+	  case FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT: _flags = O_RDWR; break;
+  	}
+  	handle.descriptor = open("/dev/ttyUSB0", (int)_flags);
+#ifndef NDEBUG
+	if (!handle.descriptor) {
+		printf("FggSerial error: cannot open serial port %s\n", port);
+	}
+#endif // NDEBUG
+#endif // UNIX
+
+
 }
 
 void fggSerialClose(FggSerialHandle handle) {
