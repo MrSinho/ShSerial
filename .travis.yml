@@ -4,7 +4,6 @@ compiler: gcc
 os: windows
 
 before_script:
-  - mingw-get install gcc mingw32-make
   - mkdir build
   - cd build
   - cmake -DFGG_SERIAL_BUILD_EXAMPLE=ON ..
