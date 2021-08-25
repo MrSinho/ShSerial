@@ -6,7 +6,7 @@ os: windows
 before_script:
   - mkdir build
   - cd build
-  - cmake -DFGG_SERIAL_BUILD_EXAMPLE=ON ..
+  - cmake -G "MinGW Makefiles" -DFGG_SERIAL_BUILD_EXAMPLE=ON ..
 
 script:
   - mingw32-make
