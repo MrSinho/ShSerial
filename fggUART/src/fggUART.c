@@ -2,11 +2,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void fggSerialOpen(const char* port, const FggSerialFlags flags, FggSerialHandle handle) {
 
 #ifdef _WIN32
-	handle._handle = CreateFileA(port, flags, 0, NULL, OPEN_EXISTING, 0, NULL);
+	char _port[8] = "\\\\.\\";
+	strcat(_port, port);
+	puts(_port);
+	handle._handle = CreateFileA(_port, flags, 0, NULL, OPEN_EXISTING, 0, NULL);
 #ifndef NDEBUG
 	if (handle._handle == INVALID_HANDLE_VALUE) {
 		printf("FggSerial error: cannot open serial port %s", port);
