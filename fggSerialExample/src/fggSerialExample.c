@@ -1,5 +1,5 @@
-#include <fggUART.h>
-
+#include <fggSerial.h>
+#include <stdlib.h>
 
 int main(void) {
 
