@@ -1,4 +1,4 @@
-#include "fggUART.h"
+#include "fggSerial.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,6 +30,7 @@ void fggSerialOpen(const char* port, const uint16_t baudRate, const FggSerialFla
 #ifndef NDEBUG
 	if (!handle.descriptor) {
 		printf("FggSerial error: cannot open serial port %s\n", port);
+		return;
 	}
 #endif // NDEBUG
 #endif // UNIX

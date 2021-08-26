@@ -1,5 +1,5 @@
-#ifndef FGG_UART_H
-#define FGG_UART_H
+#ifndef FGG_SERIAL_H
+#define FGG_SERIAL_H
 
 #ifdef _WIN32
 #include <windows.h>
