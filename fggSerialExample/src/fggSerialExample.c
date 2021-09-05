@@ -11,14 +11,17 @@ int main(void) {
 
   fggSerialSetReceiveMask(&handle, FGG_SERIAL_EV_RXCHAR);
 
-  char dst[4];
-  unsigned long bytes_read = 0;
-  fggSerialReadBuffer(3, dst, &bytes_read, handle);
-  printf("read %i bytes\n", bytes_read);
-  dst[3] = '\0';
-  printf("%s", dst);
-  printf("\n");
-  Sleep(20);
+  
+
+  //print lol
+  char dst[1];
+  for (;;) {
+    unsigned long bytes_read = 0;
+    fggSerialReadBuffer(1, dst, &bytes_read, handle);
+    printf("%c", dst[0]);
+    Sleep(10);
+  }
+  
   
 
   fggSerialClose(&handle);
