@@ -8,7 +8,7 @@
 void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* handle) {
 
 #ifdef _WIN32
-	char _port[8] = "\\\\.\\";
+	char _port[10] = "\\\\.\\";
 	strcat(_port, port);
 	handle->_handle = CreateFile(_port, flags, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	
@@ -19,16 +19,21 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 		return;
 	}
 
-	PurgeComm(handle->_handle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
-
 	//settings
 	DCB dcb = { 0 };
 	dcb.DCBlength = sizeof(DCB);
-	dcb.BaudRate 	= baud_rate;
-	dcb.ByteSize 	= (BYTE)n_bits_x_call;
-	dcb.Parity		= 0;
-	dcb.StopBits 	= ONESTOPBIT;
-	int result = SetCommState(handle->_handle, &dcb);
+	int result = GetCommState(handle->_handle, &dcb); //retreives  the current settings
+    if (!result) {
+#ifndef NDEBUG
+        printf("FggSerial error: cannot get com state for port %s\n", port);
+#endif // NDEBUG
+		return;
+    }
+	dcb.BaudRate = baud_rate;
+	dcb.ByteSize = n_bits_x_call;
+	dcb.StopBits = ONESTOPBIT;
+	dcb.Parity = NOPARITY;
+	result = SetCommState(handle->_handle, &dcb);
 	if (!result) {
 #ifndef NDEBUG
 		printf("FggSerial error: cannot set communication state on serial port %s\n", port);
@@ -39,13 +44,15 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 	COMMTIMEOUTS timeout = { 0 };
 	timeout.ReadIntervalTimeout = max_byte_interval;		
 	timeout.ReadTotalTimeoutMultiplier = 1;			
-	timeout.ReadTotalTimeoutConstant = max_timeout;		
+	timeout.ReadTotalTimeoutConstant = max_timeout;	
+	timeout.WriteTotalTimeoutConstant = max_timeout;
+    timeout.WriteTotalTimeoutMultiplier = 1;	
 	result = SetCommTimeouts(handle->_handle, &timeout);
 	if (!result) {
 		printf("FggSerial error: cannot set timeouts on port %s\n", port);
 	}
 
-	PurgeComm(handle->_handle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
+	//comm mask
 
 #endif // _WIN32
 
@@ -91,11 +98,10 @@ void fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle 
 
 }
 
-void fggSerialReadBuffer(const uint32_t size, void* dst, FggSerialHandle handle) {
+void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle handle) {
 
 #ifdef _WIN32
-	unsigned long bytes_read = 0;
-	int result = ReadFile(handle._handle, dst, size, &bytes_read, NULL);
+	int result = ReadFile(handle._handle, dst, size, bytes_read, NULL);
 #ifndef NDEBUG
 	if (!result) {
 		uint32_t error = GetLastError();
@@ -121,3 +127,15 @@ void fggSerialReadBuffer(const uint32_t size, void* dst, FggSerialHandle handle)
 
 }
 
+void fggSerialSetReceiveMask(FggSerialHandle* p_handle, FggSerialCommMask mask) {
+  	int result = SetCommMask(p_handle->_handle, mask);
+  	if (!result) {
+  	  printf("Error to in Setting CommMask\n");
+  	}
+  	//Setting WaitComm() Event
+  	DWORD event_mask = 0;
+  	result = WaitCommEvent(p_handle->_handle, &event_mask, NULL); //Wait for the character to be received
+  	if (!result) {
+  	  printf("Error! in Setting WaitCommEvent()\n");
+  	}
+}
