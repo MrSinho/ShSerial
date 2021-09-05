@@ -6,7 +6,7 @@
 int main(void) {
 
   FggSerialHandle handle = {0};
-  fggSerialOpen("\\\\.\\COM8", 9600, 8, 100, 500, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
+  fggSerialOpen("COM8", 9600, 8, 100, 500, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
   Sleep(500);
   //char buff[1] = { 'w' };
   //fggSerialWriteBuffer(1, buff, handle);
