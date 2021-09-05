@@ -11,9 +11,9 @@ int main(void) {
 
   fggSerialSetReceiveMask(&handle, FGG_SERIAL_EV_RXCHAR);
 
-  
 
-  //print lol
+
+  //print read data
   char dst[1];
   for (;;) {
     unsigned long bytes_read = 0;
