@@ -82,7 +82,6 @@ void fggSerialClose(FggSerialHandle* handle) {
 }
 
 void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle p_handle) {
-
 #ifdef _WIN32
 	int result = ReadFile(p_handle._handle, dst, size, bytes_read, NULL);
 #ifndef NDEBUG
@@ -107,7 +106,6 @@ void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_re
 	}
 #endif // NDEBUG
 #endif // _WIN32
-
 }
 
 void fggSerialSetReceiveMask(FggSerialHandle* p_handle, FggSerialCommMask mask) {
