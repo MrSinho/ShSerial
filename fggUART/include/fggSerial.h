@@ -64,15 +64,14 @@ typedef struct FggSerialHandle {
 } FggSerialHandle;
 
 
-extern void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* handle);
-
-extern void fggSerialSetReceiveMask(FggSerialHandle* p_handle, FggSerialCommMask mask);
-
-extern void fggSerialClose(FggSerialHandle* handle);
+extern void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
 
 extern void fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle handle);
 
+extern void fggSerialSetReceiveMask(FggSerialHandle* p_handle, FggSerialCommMask mask);
+
 extern void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle handle);
 
+extern void fggSerialClose(FggSerialHandle* p_handle);
 
 #endif // FGG_UART_H

@@ -11,8 +11,6 @@ int main(void) {
 
   fggSerialSetReceiveMask(&handle, FGG_SERIAL_EV_RXCHAR);
 
-
-
   //print read data
   char dst[1];
   for (;;) {
@@ -23,7 +21,6 @@ int main(void) {
   }
   
   
-
   fggSerialClose(&handle);
 
   system("pause");

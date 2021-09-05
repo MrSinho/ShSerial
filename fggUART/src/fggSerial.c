@@ -5,14 +5,14 @@
 #include <string.h>
 
 
-void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* handle) {
+void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
 
 #ifdef _WIN32
 	char _port[10] = "\\\\.\\";
 	strcat(_port, port);
-	handle->_handle = CreateFile(_port, flags, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	p_handle->_handle = CreateFile(_port, flags, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	
-	if (handle->_handle == INVALID_HANDLE_VALUE) {
+	if (p_handle->_handle == INVALID_HANDLE_VALUE) {
 #ifndef NDEBUG
 		printf("FggSerial error: cannot open serial port %s\n", port);
 #endif // NDEBUG
@@ -22,7 +22,7 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 	//settings
 	DCB dcb = { 0 };
 	dcb.DCBlength = sizeof(DCB);
-	int result = GetCommState(handle->_handle, &dcb); //retreives  the current settings
+	int result = GetCommState(p_handle->_handle, &dcb); //retreives  the current settings
     if (!result) {
 #ifndef NDEBUG
         printf("FggSerial error: cannot get com state for port %s\n", port);
@@ -33,7 +33,7 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 	dcb.ByteSize = n_bits_x_call;
 	dcb.StopBits = ONESTOPBIT;
 	dcb.Parity = NOPARITY;
-	result = SetCommState(handle->_handle, &dcb);
+	result = SetCommState(p_handle->_handle, &dcb);
 	if (!result) {
 #ifndef NDEBUG
 		printf("FggSerial error: cannot set communication state on serial port %s\n", port);
@@ -47,7 +47,7 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 	timeout.ReadTotalTimeoutConstant = max_timeout;	
 	timeout.WriteTotalTimeoutConstant = max_timeout;
     timeout.WriteTotalTimeoutMultiplier = 1;	
-	result = SetCommTimeouts(handle->_handle, &timeout);
+	result = SetCommTimeouts(p_handle->_handle, &timeout);
 	if (!result) {
 		printf("FggSerial error: cannot set timeouts on port %s\n", port);
 	}
@@ -76,32 +76,15 @@ void fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_
 }
 
 void fggSerialClose(FggSerialHandle* handle) {
-
 #ifdef _WIN32
-	PurgeComm(handle->_handle, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
 	CloseHandle(handle->_handle);
-#endif
-
-}
-
-void fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle handle) {
-
-#ifdef _WIN32
-	unsigned long bytes_written = 0;
-	int result = WriteFile(handle._handle, src, size, &bytes_written, NULL);
-#ifndef NDEBUG
-	if (!result) {
-		printf("FggSerial error: cannot write to serial port, handle %p\n", handle._handle);
-	}
-#endif // NDEBUG
 #endif // _WIN32
-
 }
 
-void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle handle) {
+void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle p_handle) {
 
 #ifdef _WIN32
-	int result = ReadFile(handle._handle, dst, size, bytes_read, NULL);
+	int result = ReadFile(p_handle._handle, dst, size, bytes_read, NULL);
 #ifndef NDEBUG
 	if (!result) {
 		uint32_t error = GetLastError();
@@ -128,14 +111,34 @@ void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_re
 }
 
 void fggSerialSetReceiveMask(FggSerialHandle* p_handle, FggSerialCommMask mask) {
-  	int result = SetCommMask(p_handle->_handle, mask);
+#ifdef _WIN32
+	  int result = SetCommMask(p_handle->_handle, mask);
   	if (!result) {
-  	  printf("Error to in Setting CommMask\n");
-  	}
+#ifndef NDEBUG
+		printf("FggSerial error: cannot set receive mask\n");
+#endif // NDEBUG
+		return;
+	  }
   	//Setting WaitComm() Event
   	DWORD event_mask = 0;
   	result = WaitCommEvent(p_handle->_handle, &event_mask, NULL); //Wait for the character to be received
   	if (!result) {
-  	  printf("Error! in Setting WaitCommEvent()\n");
+#ifndef NDEBUG
+		printf("FggSerial error while waiting for comm event\n");
+#endif // NDEBUG
+		return;
   	}
+#endif // _WIN32
+}
+
+void fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle handle) {
+#ifdef _WIN32
+	unsigned long bytes_written = 0;
+	int result = WriteFile(handle._handle, src, size, &bytes_written, NULL);
+	#ifndef NDEBUG
+	if (!result) {
+		printf("FggSerial error: cannot write to serial port, handle %p\n", handle._handle);
+	}
+#endif // NDEBUG
+#endif // _WIN32
 }
