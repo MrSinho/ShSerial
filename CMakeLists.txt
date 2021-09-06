@@ -3,10 +3,10 @@ add_definitions(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)
 
 project(fggSerial C)
 
-file(GLOB_RECURSE FGG_UART_SRC fggUART/src/*.c)
-add_library(fggUART ${FGG_UART_SRC})
-target_include_directories(fggUART PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/fggUART/include
+file(GLOB_RECURSE FGG_SERIAL_SRC fggSerial/src/*.c)
+add_library(fggSerial ${FGG_SERIAL_SRC})
+target_include_directories(fggSerial PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/fggSerial/include
 )
 
 option(FGG_SERIAL_BUILD_EXAMPLE OFF)
@@ -18,7 +18,7 @@ target_include_directories(fggSerialExample PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/fggSerialExample/include
 )
 target_link_libraries(fggSerialExample PUBLIC
-  fggUART
+  fggSerial
 )
 set_target_properties(fggSerialExample PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin
@@ -26,6 +26,6 @@ set_target_properties(fggSerialExample PROPERTIES
 
 endif()
 
-set_target_properties(fggUART PROPERTIES
+set_target_properties(fggSerial PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin
 )
