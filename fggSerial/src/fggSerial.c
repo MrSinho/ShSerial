@@ -21,16 +21,14 @@ uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_
 	DCB dcb = { 0 };
 	dcb.DCBlength = sizeof(DCB);
 
-	uint16_t result = fggSerialCheckResult(p_handle, GetCommState(p_handle->_handle, &dcb), "cannot set comm state");
-	if (!result) { return 0; }
+	if (!fggSerialCheckResult(p_handle, GetCommState(p_handle->_handle, &dcb), "cannot set comm state")) { return 0; }
 
 	dcb.BaudRate = baud_rate;
 	dcb.ByteSize = n_bits_x_call;
 	dcb.StopBits = ONESTOPBIT;
 	dcb.Parity = NOPARITY;
 	
-	result = fggSerialCheckResult(p_handle, SetCommState(p_handle->_handle, &dcb), "cannot set communication state");
-	if (!result) { return 0; }
+	if (!fggSerialCheckResult(p_handle, SetCommState(p_handle->_handle, &dcb), "cannot set communication state")) { return 0; }
 
 	COMMTIMEOUTS timeout = { 0 };
 	timeout.ReadIntervalTimeout = max_byte_interval;		
@@ -39,8 +37,7 @@ uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_
 	timeout.WriteTotalTimeoutConstant = max_timeout;
     timeout.WriteTotalTimeoutMultiplier = 1;
 
-	result = fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts");
-	if (!result) { return 0; }
+	if (!fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
 
 	return 1;
 
@@ -67,16 +64,14 @@ uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_
 
 uint16_t fggSerialClose(FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	int result = fggSerialCheckResult(p_handle, CloseHandle(p_handle->_handle), "cannot close serial port");
-	if (!result) { return 0; }
+	if (!fggSerialCheckResult(p_handle, CloseHandle(p_handle->_handle), "cannot close serial port")) { return 0; }
 	return 1;
 #endif // _WIN32
 }
 
 uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	int result = fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port");
-	if (!result) { return 0; } 
+	if (!fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port")) { return 0; } 
 	return 1;
 #endif // _WIN32
 }
@@ -97,8 +92,7 @@ uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_hand
 uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	unsigned long bytes_written = 0;
-	int result = fggSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, &bytes_written, NULL), "cannot write to serial port");
-	if (!result) { return 0; }
+	if (!fggSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, &bytes_written, NULL), "cannot write to serial port")) { return 0; }
 	return 1;
 #endif // _WIN32
 }
