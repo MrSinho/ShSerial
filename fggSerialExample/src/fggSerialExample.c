@@ -9,9 +9,9 @@ int main(void) {
   printf("connecting to serial port\n");
   FggSerialHandle handle = {0};
 #ifdef _WIN32
-  fggSerialOpen("COM3", 9600, 100, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
+  fggSerialOpen("COM3", 9600, 100, FGG_SERIAL_READ_WRITE, &handle);
 #else
-  fggSerialOpen("/dev/tty/ACM0", 9600, 100, 500, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
+  fggSerialOpen("/dev/tty/ACM0", 9600, 100, 500, FGG_SERIAL_READ_WRITE, &handle);
 #endif  
 
   //print read data

@@ -17,13 +17,15 @@
 typedef enum FggSerialFlags {
 
 #ifdef _WIN32
-  FGG_SERIAL_READ_BIT  = GENERIC_READ,
-  FGG_SERIAL_WRITE_BIT = GENERIC_WRITE,
+  FGG_SERIAL_READ  = GENERIC_READ,
+  FGG_SERIAL_WRITE = GENERIC_WRITE,
+  FGG_SERIAL_READ_WRITE = GENERIC_READ | GENERIC_WRITE,
 #endif // _WIN32
 
 #ifdef __linux__
-  FGG_SERIAL_READ_BIT   = 0b00001,
-  FGG_SERIAL_WRITE_BIT  = 0b00010,
+  FGG_SERIAL_READ   = O_RDONLY,
+  FGG_SERIAL_WRITE  = O_WRONLY,
+  FGG_SERIAL_READ_WRITE = O_RDWR,
 #endif // __linux__
 
 
@@ -70,7 +72,7 @@ extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle*
 
 extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
 
-extern uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle);
+extern uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
 

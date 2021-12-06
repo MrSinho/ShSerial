@@ -43,15 +43,7 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 	if (!fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
 	fggSerialCheckResult(p_handle, fggSerialSetReceiveMask(FGG_SERIAL_EV_RXCHAR, p_handle), "error setting receive mask");
 #else
-	uint8_t l_flags = 0;
-	switch(flags) {
-	  case FGG_SERIAL_READ_BIT: l_flags = O_RDONLY; break;
-	  case FGG_SERIAL_WRITE_BIT: l_flags = O_WRONLY; break;
-  	}
-	if (FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT) {
-		l_flags = O_RDWR;
-	}
-  	p_handle->port = open(port, (int)l_flags);
+  	p_handle->port = open(port, (int)flags);
 	if (fggSerialCheckResult(p_handle, p_handle->port, "cannot open serial port")) {
 		return 0;
 	}
@@ -120,7 +112,7 @@ uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_hand
 }
 #endif // _WIN32
 
-uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle) {
+uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	unsigned long bytes_written = 0;
 	if (!fggSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, &bytes_written, NULL), "cannot write to serial port")) { 
