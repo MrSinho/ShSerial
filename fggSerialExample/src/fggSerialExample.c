@@ -6,22 +6,27 @@
 
 int main(void) {
 
-  int result = 0;
-
   printf("connecting to serial port\n");
   FggSerialHandle handle = {0};
-  result = fggSerialOpen("/dev/tty/ACM0", 9600, 8, 100, 500, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
-  
+#ifdef _WIN32
+  fggSerialOpen("COM3", 9600, 100, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
+#else
+  fggSerialOpen("/dev/tty/ACM0", 9600, 100, 500, FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT, &handle);
+#endif  
+
   //print read data
   printf("waiting for incoming data...\n");
   float dst[1];
   for (;;) {
     unsigned long bytes_read = 0;
-    fggSerialReadBuffer(4, dst, &bytes_read, &handle);
+    if (!fggSerialReadBuffer(4, dst, &bytes_read, &handle)) { break; }
     printf("voltage: %f\n", dst[0]);
   }
   
-  result = fggSerialClose(&handle);
+  fggSerialClose(&handle);
 
+#ifdef _WIN32
+  system("pause");
+#endif
   return 0;
 }

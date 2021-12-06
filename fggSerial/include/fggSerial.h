@@ -68,11 +68,11 @@ extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle*
 #endif // _WIN32
 
 
-extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
+extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle);
 
-extern void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
+extern uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialClose(FggSerialHandle* p_handle);
 

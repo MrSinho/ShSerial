@@ -9,7 +9,7 @@
 #include <errno.h>
 #endif // _WIN32
 
-uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
+uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	char _port[10] = "\\\\.\\";
 	strcat(_port, port);
@@ -27,22 +27,21 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 	if (!fggSerialCheckResult(p_handle, GetCommState(p_handle->_handle, &dcb), "cannot set comm state")) { return 0; }
 
 	dcb.BaudRate = baud_rate;
-	dcb.ByteSize = n_bits_x_call;
+	dcb.ByteSize = 8;
 	dcb.StopBits = ONESTOPBIT;
 	dcb.Parity = NOPARITY;
 	
 	if (!fggSerialCheckResult(p_handle, SetCommState(p_handle->_handle, &dcb), "cannot set communication state")) { return 0; }
 
 	COMMTIMEOUTS timeout = { 0 };
-	timeout.ReadIntervalTimeout = max_byte_interval;		
+	timeout.ReadIntervalTimeout = read_timeout;		
 	timeout.ReadTotalTimeoutMultiplier = 1;			
-	timeout.ReadTotalTimeoutConstant = max_timeout;	
-	timeout.WriteTotalTimeoutConstant = max_timeout;
+	timeout.ReadTotalTimeoutConstant = 0;	
+	timeout.WriteTotalTimeoutConstant = 0;
     timeout.WriteTotalTimeoutMultiplier = 1;
 
 	if (!fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
-	Sleep(500);
-	fggSerialCheckResult(p_handle, fggSerialSetReceiveMask(FGG_SERIAL_EV_RXCHAR, &handle);
+	fggSerialCheckResult(p_handle, fggSerialSetReceiveMask(FGG_SERIAL_EV_RXCHAR, p_handle), "error setting receive mask");
 #else
 	uint8_t l_flags = 0;
 	switch(flags) {
@@ -77,7 +76,7 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 	conf.c_oflag &= ~OXTABS;
 	conf.c_oflag &= ~ONOEOT;
 #endif // __linux__
-	conf.c_cc[VTIME] = 10; //timeout in deciseconds
+	conf.c_cc[VTIME] = read_timeout;
 	conf.c_cc[VMIN] = 0;
 	cfsetispeed(&conf, baud_rate);
 	cfsetospeed(&conf, baud_rate);
@@ -93,24 +92,30 @@ uint16_t fggSerialClose(FggSerialHandle* p_handle) {
 #endif // _WIN32
 }
 
-void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
+uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port"); 	
+	if (!fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port")) {
+		return 0;
+	} 	
 #else
-	fggSerialCheckResult(p_handle, read(p_handle->port, dst, size), "cannot read from serial port");
+	if (!fggSerialCheckResult(p_handle, read(p_handle->port, dst, size), "cannot read from serial port")) {
+		return 0;
+	}
 #endif // _WIN32
+	return 1;
 }
 
 
 #ifdef _WIN32
 uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_handle) {
+	// Initialize the rest of the OVERLAPPED structure to zero.
+	
 	int result = fggSerialCheckResult(p_handle, SetCommMask(p_handle->_handle, mask), "cannot set receive mask");
 	if (!result) { return 0; } 
 
   	DWORD event_mask = 0;
   	result = fggSerialCheckResult(p_handle, WaitCommEvent(p_handle->_handle, &event_mask, NULL), "cannot set waiting comm event");
 	if (!result) { return 0; }
-	
 	return 1;
 }
 #endif // _WIN32
