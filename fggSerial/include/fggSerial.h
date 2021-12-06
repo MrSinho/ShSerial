@@ -24,15 +24,29 @@ typedef enum FggSerialFlags {
 #ifdef __linux__
   FGG_SERIAL_READ_BIT   = 0b00001,
   FGG_SERIAL_WRITE_BIT  = 0b00010,
-#endif // UNIX
+#endif // __linux__
 
 
 } FggSerialFlags;
 
 
-typedef enum FggSerialCommMask {
+typedef struct FggSerialHandle {
 
 #ifdef _WIN32
+  HANDLE _handle;
+#endif
+
+#ifdef __linux__
+  int port;
+#endif // UNIX
+
+} FggSerialHandle;
+
+
+#ifdef _WIN32
+
+typedef enum FggSerialCommMask {
+
   FGG_SERIAL_EV_BREAK     = EV_BREAK   ,		
   FGG_SERIAL_EV_CTS       = EV_CTS     ,			
   FGG_SERIAL_EV_DSR       = EV_DSR     ,			
@@ -46,32 +60,19 @@ typedef enum FggSerialCommMask {
   FGG_SERIAL_EV_RXCHAR    = EV_RXCHAR  ,		
   FGG_SERIAL_EV_RXFLAG    = EV_RXFLAG  ,		
   FGG_SERIAL_EV_TXEMPTY   = EV_TXEMPTY ,	
-#endif // _WIN32
 
 } FggSerialCommMask;
 
+extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_handle);
 
-typedef struct FggSerialHandle {
-
-#ifdef _WIN32
-  HANDLE _handle;
-#endif
-
-#ifdef __linux__
-  int descriptor;
-#endif // UNIX
-
-} FggSerialHandle;
+#endif // _WIN32
 
 
-
-extern uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
+extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle);
 
-extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_handle);
-
-extern uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
+extern void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialClose(FggSerialHandle* p_handle);
 

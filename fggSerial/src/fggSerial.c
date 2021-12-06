@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef _WIN32
+#include <termios.h>
+#include <errno.h>
+#endif // _WIN32
 
-
-uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
+uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t n_bits_x_call, const uint32_t max_byte_interval, const uint32_t max_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	char _port[10] = "\\\\.\\";
 	strcat(_port, port);
@@ -38,28 +41,49 @@ uint16_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_
     timeout.WriteTotalTimeoutMultiplier = 1;
 
 	if (!fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
-
-	return 1;
-
-#endif // _WIN32
-
-
-#ifdef __linux__
-	uint8_t _flags = 0;
+	Sleep(500);
+	fggSerialCheckResult(p_handle, fggSerialSetReceiveMask(FGG_SERIAL_EV_RXCHAR, &handle);
+#else
+	uint8_t l_flags = 0;
 	switch(flags) {
-	  case FGG_SERIAL_READ_BIT: _flags = O_RDONLY; break;
-	  case FGG_SERIAL_WRITE_BIT: _flags = O_WRONLY; break;
-	  case FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT: _flags = O_RDWR; break;
+	  case FGG_SERIAL_READ_BIT: l_flags = O_RDONLY; break;
+	  case FGG_SERIAL_WRITE_BIT: l_flags = O_WRONLY; break;
   	}
-  	handle.descriptor = open("/dev/ttyUSB0", (int)_flags);
-	if (!handle.descriptor) {
-#ifndef NDEBUG
-		printf("FggSerial error: cannot open serial port %s\n", port);
-#endif // NDEBUG
-		return;
+	if (FGG_SERIAL_READ_BIT | FGG_SERIAL_WRITE_BIT) {
+		l_flags = O_RDWR;
 	}
-
+  	p_handle->port = open(port, (int)l_flags);
+	if (fggSerialCheckResult(p_handle, p_handle->port, "cannot open serial port")) {
+		return 0;
+	}
+	struct termios conf;
+	fggSerialCheckResult(p_handle, tcgetattr(p_handle->port, &conf), "error getting config info");
+	conf.c_cflag &= ~PARENB;
+	conf.c_cflag &= ~CSTOPB;
+	conf.c_cflag &= ~CSIZE;
+	conf.c_cflag |= CS8;
+	conf.c_cflag &= ~CRTSCTS;
+	conf.c_cflag |= CREAD | CLOCAL;
+	conf.c_lflag &= ~ICANON;
+	conf.c_lflag &= ~ECHO;
+	conf.c_lflag &= ~ECHOE; 
+	conf.c_lflag &= ~ECHONL; 
+	conf.c_lflag &= ~ISIG; 
+	conf.c_iflag &= ~(IXON | IXOFF | IXANY);
+	conf.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
+	conf.c_oflag &= ~OPOST;
+	conf.c_oflag &= ~ONLCR;
+#ifndef __linux__
+	conf.c_oflag &= ~OXTABS;
+	conf.c_oflag &= ~ONOEOT;
 #endif // __linux__
+	conf.c_cc[VTIME] = 10; //timeout in deciseconds
+	conf.c_cc[VMIN] = 0;
+	cfsetispeed(&conf, baud_rate);
+	cfsetospeed(&conf, baud_rate);
+	fggSerialCheckResult(p_handle, tcsetattr(p_handle->port, TCSANOW, &conf), "error applying configuration");
+#endif // _WIN32
+	return 1;
 }
 
 uint16_t fggSerialClose(FggSerialHandle* p_handle) {
@@ -69,15 +93,17 @@ uint16_t fggSerialClose(FggSerialHandle* p_handle) {
 #endif // _WIN32
 }
 
-uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
+void fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	if (!fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port")) { return 0; } 
-	return 1;
+	fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port"); 	
+#else
+	fggSerialCheckResult(p_handle, read(p_handle->port, dst, size), "cannot read from serial port");
 #endif // _WIN32
 }
 
-uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_handle) {
+
 #ifdef _WIN32
+uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_handle) {
 	int result = fggSerialCheckResult(p_handle, SetCommMask(p_handle->_handle, mask), "cannot set receive mask");
 	if (!result) { return 0; } 
 
@@ -86,15 +112,21 @@ uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle* p_hand
 	if (!result) { return 0; }
 	
 	return 1;
-#endif // _WIN32
 }
+#endif // _WIN32
 
 uint16_t fggSerialWriteBuffer(const uint32_t size, const void* src, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	unsigned long bytes_written = 0;
-	if (!fggSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, &bytes_written, NULL), "cannot write to serial port")) { return 0; }
-	return 1;
+	if (!fggSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, &bytes_written, NULL), "cannot write to serial port")) { 
+		return 0; 
+	}
+#else
+	if (!fggSerialCheckResult(p_handle, write(p_handle->port, src, size), "cannot write to serial port")) {
+		return 0;
+	}
 #endif // _WIN32
+	return 1;
 }
 
 
@@ -1138,7 +1170,9 @@ const char* fggSerialTranslateError() {
 		case ERROR_EFS_VERSION_NOT_SUPPORT: return ("ERROR_EFS_VERSION_NOT_SUPPORT");
 		case ERROR_NO_BROWSER_SERVERS_FOUND: return ("ERROR_NO_BROWSER_SERVERS_FOUND");
 		case SCHED_E_SERVICE_NOT_LOCALSYSTEM: return ("SCHED_E_SERVICE_NOT_LOCALSYSTEM");
-#endif // _WIN32
 	}
+#else
+	return strerror(errno);
+#endif // _WIN32
 	return "(unknown error)";
 }
