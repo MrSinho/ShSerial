@@ -1168,8 +1168,8 @@ const char* fggSerialTranslateError() {
 		case ERROR_NO_BROWSER_SERVERS_FOUND: return ("ERROR_NO_BROWSER_SERVERS_FOUND");
 		case SCHED_E_SERVICE_NOT_LOCALSYSTEM: return ("SCHED_E_SERVICE_NOT_LOCALSYSTEM");
 	}
+	return "(unknown error)";
 #else
 	return strerror(errno);
 #endif // _WIN32
-	return "(unknown error)";
 }
