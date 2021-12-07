@@ -28,35 +28,29 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 #endif // NDEBUG
 		return 0;
 	}
-
 	DCB dcb = { 0 };
 	dcb.DCBlength = sizeof(DCB);
-
 	if (!fggSerialCheckResult(p_handle, GetCommState(p_handle->_handle, &dcb), "cannot set comm state")) { return 0; }
-
 	dcb.BaudRate = baud_rate;
 	dcb.ByteSize = 8;
 	dcb.StopBits = ONESTOPBIT;
 	dcb.Parity = NOPARITY;
-	
 	if (!fggSerialCheckResult(p_handle, SetCommState(p_handle->_handle, &dcb), "cannot set communication state")) { return 0; }
-
 	COMMTIMEOUTS timeout = { 0 };
 	timeout.ReadIntervalTimeout = read_timeout;		
 	timeout.ReadTotalTimeoutMultiplier = 1;			
 	timeout.ReadTotalTimeoutConstant = 0;	
 	timeout.WriteTotalTimeoutConstant = 0;
     timeout.WriteTotalTimeoutMultiplier = 1;
-
 	if (!fggSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
 	fggSerialCheckResult(p_handle, fggSerialSetReceiveMask(FGG_SERIAL_EV_RXCHAR, p_handle), "error setting receive mask");
 #else
-  	p_handle->port = open(port, (int)flags);
-	if (fggSerialCheckResult(p_handle, p_handle->port, "cannot open serial port")) {
+  	p_handle->fd = open(port, flags | O_NOCTTY);
+	if (!fggSerialCheckResult(p_handle, p_handle->fd, "cannot open serial port")) {
 		return 0;
 	}
 	struct termios conf;
-	fggSerialCheckResult(p_handle, tcgetattr(p_handle->port, &conf), "error getting config info");
+	fggSerialCheckResult(p_handle, tcgetattr(p_handle->fd, &conf), "error getting config info");
 	conf.c_cflag &= ~PARENB;
 	conf.c_cflag &= ~CSTOPB;
 	conf.c_cflag &= ~CSIZE;
@@ -78,9 +72,11 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 #endif // __linux__
 	conf.c_cc[VTIME] = read_timeout;
 	conf.c_cc[VMIN] = 0;
+	cfmakeraw(&conf);
 	cfsetispeed(&conf, baud_rate);
 	cfsetospeed(&conf, baud_rate);
-	fggSerialCheckResult(p_handle, tcsetattr(p_handle->port, TCSANOW, &conf), "error applying configuration");
+	tcflush(p_handle->fd, TCIFLUSH);
+	tcsetattr(p_handle->fd, TCSANOW, &conf);
 #endif // _WIN32
 	return 1;
 }
@@ -88,17 +84,19 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 uint16_t fggSerialClose(FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	if (!fggSerialCheckResult(p_handle, CloseHandle(p_handle->_handle), "cannot close serial port")) { return 0; }
-	return 1;
+#else
+	close(p_handle->fd);
 #endif // _WIN32
+	return 1;
 }
 
 uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	if (!fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port")) {
+	if (fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port") != 0) {
 		return 0;
 	} 	
 #else
-	if (!fggSerialCheckResult(p_handle, read(p_handle->port, dst, size), "cannot read from serial port")) {
+	if (fggSerialCheckResult(p_handle, read(p_handle->fd, dst, size), "cannot read from serial port") != 0) {
 		return 0;
 	}
 #endif // _WIN32
@@ -127,7 +125,7 @@ uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, FggSerialHandle* p
 		return 0; 
 	}
 #else
-	if (!fggSerialCheckResult(p_handle, write(p_handle->port, src, size), "cannot write to serial port")) {
+	if (!fggSerialCheckResult(p_handle, write(p_handle->fd, src, size), "cannot write to serial port")) {
 		return 0;
 	}
 #endif // _WIN32

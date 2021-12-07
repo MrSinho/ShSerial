@@ -39,7 +39,7 @@ typedef struct FggSerialHandle {
 #endif
 
 #ifdef __linux__
-  int port;
+  int fd;
 #endif // UNIX
 
 } FggSerialHandle;
