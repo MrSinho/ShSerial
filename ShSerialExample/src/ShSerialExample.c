@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <shSerial.h>
-#include <stdlib.h>
+#include <ShSerial.h>
 
 #include <stdio.h>
 
