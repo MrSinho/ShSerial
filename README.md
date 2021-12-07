@@ -15,7 +15,7 @@ cmake --build .
 
 ## Example:
 
-See the example ![here](ShSerialExample/src/ShSerialExample.c)
+See the example [here](ShSerialExample/src/ShSerialExample.c)
 
 ```c
 #include <ShSerial.h>
