@@ -49,32 +49,19 @@ uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t
 	if (!fggSerialCheckResult(p_handle, p_handle->fd, "cannot open serial port")) {
 		return 0;
 	}
-	struct termios conf;
-	fggSerialCheckResult(p_handle, tcgetattr(p_handle->fd, &conf), "error getting config info");
-	conf.c_cflag &= ~PARENB;
-	conf.c_cflag &= ~CSTOPB;
-	conf.c_cflag &= ~CSIZE;
-	conf.c_cflag |= CS8;
-	conf.c_cflag &= ~CRTSCTS;
-	conf.c_cflag |= CREAD | CLOCAL;
-	conf.c_lflag &= ~ICANON;
-	conf.c_lflag &= ~ECHO;
-	conf.c_lflag &= ~ECHOE; 
-	conf.c_lflag &= ~ECHONL; 
-	conf.c_lflag &= ~ISIG; 
-	conf.c_iflag &= ~(IXON | IXOFF | IXANY);
-	conf.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
-	conf.c_oflag &= ~OPOST;
-	conf.c_oflag &= ~ONLCR;
-#ifndef __linux__
-	conf.c_oflag &= ~OXTABS;
-	conf.c_oflag &= ~ONOEOT;
-#endif // __linux__
-	conf.c_cc[VTIME] = read_timeout;
-	conf.c_cc[VMIN] = 0;
-	cfmakeraw(&conf);
+	struct termios conf = { 0 };
+	tcgetattr(p_handle->fd, &conf);
 	cfsetispeed(&conf, baud_rate);
 	cfsetospeed(&conf, baud_rate);
+	conf.c_cflag     &=  ~PARENB;            // Make 8n1
+	conf.c_cflag     &=  ~CSTOPB;
+	conf.c_cflag     &=  ~CSIZE;
+	conf.c_cflag     |=  CS8;
+	conf.c_cflag     &=  ~CRTSCTS;           // no flow control
+	conf.c_cc[VMIN]   =  1;                  // read doesn't block
+	conf.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
+	conf.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+	cfmakeraw(&conf);
 	tcflush(p_handle->fd, TCIFLUSH);
 	tcsetattr(p_handle->fd, TCSANOW, &conf);
 #endif // _WIN32
@@ -92,11 +79,9 @@ uint16_t fggSerialClose(FggSerialHandle* p_handle) {
 
 uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle) {
 #ifdef _WIN32
-	if (fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port") != 0) {
-		return 0;
-	} 	
+	if (!fggSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port")) {
 #else
-	if (fggSerialCheckResult(p_handle, read(p_handle->fd, dst, size), "cannot read from serial port") != 0) {
+	if (!fggSerialCheckResult(p_handle, read(p_handle->fd, dst, size), "cannot read from serial port")) {
 		return 0;
 	}
 #endif // _WIN32
@@ -134,7 +119,11 @@ uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, FggSerialHandle* p
 
 
 uint16_t fggSerialCheckResult(FggSerialHandle* p_handle, const int result, const char* msg) {
+#ifdef _WIN32
 	if (!result) {
+#else
+	if (result < 0) {
+#endif
 #ifndef NDEBUG
 		printf("FggSerial error, handle 0x%p: %s, %s\n", p_handle, msg, fggSerialTranslateError());
 #endif // NDEBUG
