@@ -71,9 +71,9 @@ extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle*
 
 extern void fggSerialSleep(uint32_t ms);
 
-extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
+extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout_ms, const FggSerialFlags flags, FggSerialHandle* p_handle);
 
-extern uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, FggSerialHandle* p_handle);
+extern uint16_t fggSerialWriteBuffer(const uint32_t size, void* src, unsigned long* p_bytes_written, FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, FggSerialHandle* p_handle);
 
@@ -81,6 +81,6 @@ extern uint16_t fggSerialClose(FggSerialHandle* p_handle);
 
 extern uint16_t fggSerialCheckResult(FggSerialHandle* p_handle, const int result, const char* msg);
 
-extern const char* fggSerialTranslateError();
+extern const char* fggSerialGetError();
 
 #endif // FGG_UART_H
