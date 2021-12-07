@@ -11,7 +11,7 @@ int main(void) {
 #ifdef _WIN32
   fggSerialOpen("COM3", 9600, 100, FGG_SERIAL_READ_WRITE, &handle);
 #else
-  fggSerialOpen("/dev/tty/ACM0", 9600, 100, 500, FGG_SERIAL_READ_WRITE, &handle);
+  fggSerialOpen("/dev/ttyACM0", 9600, 100, FGG_SERIAL_READ_WRITE, &handle);
 #endif  
 
   //print read data
@@ -21,6 +21,7 @@ int main(void) {
     unsigned long bytes_read = 0;
     if (!fggSerialReadBuffer(4, dst, &bytes_read, &handle)) { break; }
     printf("voltage: %f\n", dst[0]);
+    fggSerialSleep(5);
   }
   
   fggSerialClose(&handle);

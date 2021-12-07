@@ -69,6 +69,7 @@ extern uint16_t fggSerialSetReceiveMask(FggSerialCommMask mask, FggSerialHandle*
 
 #endif // _WIN32
 
+extern void fggSerialSleep(uint32_t ms);
 
 extern uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle);
 

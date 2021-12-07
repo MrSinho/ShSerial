@@ -9,6 +9,14 @@
 #include <errno.h>
 #endif // _WIN32
 
+void fggSerialSleep(uint32_t ms) {
+#ifdef _WIN32
+	Sleep(ms);
+#else
+	usleep(ms*1000);
+#endif
+}
+
 uint8_t fggSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout, const FggSerialFlags flags, FggSerialHandle* p_handle) {
 #ifdef _WIN32
 	char _port[10] = "\\\\.\\";
