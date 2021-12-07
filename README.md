@@ -1,1 +1,4 @@
-# fggSerial
+# FggSerial
+
+## Status 
+Linux ![status_badge](.ShCI/status.svg)
