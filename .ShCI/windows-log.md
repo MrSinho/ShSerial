@@ -1,26 +1,10 @@
 # ShSerial
 ![windows_badge](windows-status.svg)
-## [Windows build logs:](https://github.com/MrSinho/ShCI)
+## [Windows build logs:](https://github.com/MrSinho/ShCI)
+  
 ```bash $shci call$
 choco install -y curl mingw cmake
 Chocolatey v0.11.2
-Chocolatey detected you are not running from an elevated command shell
- (cmd/powershell).
-
- You may experience errors - many functions/packages
- require admin rights. Only advanced users should run choco w/out an
- elevated shell. When you open the command shell, you should ensure
- that you do so with "Run as Administrator" selected. If you are
- attempting to use Chocolatey in a non-administrator setting, you
- must select a different location other than the default install
- location. See
- https://docs.chocolatey.org/en-us/choco/setup#non-administrative-install
- for details.
-
-For the question below, you have 20 seconds to make a selection.
-
- Do you want to continue?([Y]es/[N]o): 
-Timeout or your choice of '' is not a valid selection.
 Installing the following packages:
 curl;mingw;cmake
 By installing, you accept licenses for the packages.
@@ -59,7 +43,7 @@ cd ShSerial && mkdir build && cd build && cmake -G"MinGW Makefiles" -DSH_SERIAL_
 -- Detecting C compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: C:/Users/sino3/Desktop/GitHub/ShCI-implementation/build/ShSerial/build
+-- Build files have been written to: C:/Users/sino3/Desktop/GitHub/ShCI-implementation/bin/Debug/ShSerial/build
 [ 25%] Building C object CMakeFiles/ShSerial.dir/ShSerial/src/ShSerial.c.obj
 [ 50%] Linking C static library ..\bin\libShSerial.a
 [ 50%] Built target ShSerial
