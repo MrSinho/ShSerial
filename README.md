@@ -2,8 +2,8 @@
 
 ## [Build status](https://github.com/MrSinho/PlyImporter/.ShCI)
 
-[![linux_badge](.ShCI/linux-status.svg)](https://github.com/MrSinho/PlyImporter/.ShCI/linux-log.md)
-[![windows_badge](.ShCI/windows-status.svg)](https://github.com/MrSinho/PlyImporter/.ShCI/windows-log.md)
+[![linux_badge](.ShCI/linux-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/linux-log.md)
+[![windows_badge](.ShCI/windows-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/windows-log.md)
 
 ## Getting started
 
