@@ -1,7 +1,7 @@
 # ShSerial
 ![windows_badge](windows-status.svg)
 ## [Windows build logs:](https://github.com/MrSinho/ShCI)
-  
+  `Build ran for 7.10s`
 ```bash $shci call$
 choco install -y curl mingw cmake
 Chocolatey v0.11.2
@@ -26,6 +26,10 @@ Warnings:
  - mingw - mingw v11.2.0.07112021 already installed.
  Use --force to reinstall, specify a version to install, or try upgrade.
 
+Enjoy using Chocolatey? Explore more amazing features to take your
+experience to the next level at
+ https://chocolatey.org/compare
+
 ```
 
 ```bash $shci call$
@@ -43,7 +47,7 @@ cd ShSerial && mkdir build && cd build && cmake -G"MinGW Makefiles" -DSH_SERIAL_
 -- Detecting C compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: C:/Users/sino3/Desktop/GitHub/ShCI-implementation/bin/Debug/ShSerial/build
+-- Build files have been written to: C:/Users/sino3/Desktop/GitHub/ShCI-implementation/bin/ShSerial/build
 [ 25%] Building C object CMakeFiles/ShSerial.dir/ShSerial/src/ShSerial.c.obj
 [ 50%] Linking C static library ..\bin\libShSerial.a
 [ 50%] Built target ShSerial
