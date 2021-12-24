@@ -9,6 +9,10 @@
 #include <errno.h>
 #endif // _WIN32
 
+#ifdef _MSC_VER
+#pragma warning (disable: 4996)
+#endif // _MSC_VER
+
 void shSerialSleep(uint32_t ms) {
 #ifdef _WIN32
 	Sleep(ms);
