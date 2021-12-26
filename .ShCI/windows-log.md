@@ -1,7 +1,7 @@
 # ShSerial
 ![windows_badge](windows-status.svg)
 ## [Windows build logs:](https://github.com/MrSinho/ShCI)
-  `Build ran for 7.10s`
+  `Build ran for 9.53s`
 ```bash $shci call$
 choco install -y curl mingw cmake
 Chocolatey v0.11.2
@@ -25,10 +25,6 @@ Warnings:
  Use --force to reinstall, specify a version to install, or try upgrade.
  - mingw - mingw v11.2.0.07112021 already installed.
  Use --force to reinstall, specify a version to install, or try upgrade.
-
-Enjoy using Chocolatey? Explore more amazing features to take your
-experience to the next level at
- https://chocolatey.org/compare
 
 ```
 
