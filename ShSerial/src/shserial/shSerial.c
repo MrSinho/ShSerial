@@ -1,4 +1,4 @@
-#include "shserial/ShSerial.h"
+#include "shserial/shSerial.h"
 
 #include <stdlib.h>
 #include <stdio.h>
