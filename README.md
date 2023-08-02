@@ -1,6 +1,8 @@
-# ShSerial
+# shserial
 
 ## [Build status](https://github.com/MrSinho/PlyImporter/.ShCI)
+
+A simple Windows and Unix serial communication library using the win32 api and posix, written in C.
 
 [![linux_badge](.ShCI/linux-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/linux-log.md)
 [![windows_badge](.ShCI/windows-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/windows-log.md)
