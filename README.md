@@ -2,8 +2,8 @@
 
 A simple Windows and Unix serial communication library using the win32 api and posix, written in C.
 
-[![linux_badge](.ShCI/linux-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/linux-log.md)
-[![windows_badge](.ShCI/windows-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/windows-log.md)
+[![linux_badge](.shci/exit_code.svg)](.shci/linux/log.md)
+[![windows_badge](.shci/windows/exit_code.svg)](.shci/windows/log.md)
 
 ## Getting started
 
