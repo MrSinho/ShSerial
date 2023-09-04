@@ -51,6 +51,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+#mrsinho
 bin
 build
 .vscode
+windows
+linux

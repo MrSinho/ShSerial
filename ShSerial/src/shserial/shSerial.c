@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif//__cplusplus
+
 #include "shserial/shSerial.h"
 
 #include <stdlib.h>
@@ -10,10 +14,14 @@
 #endif // _WIN32
 
 #ifdef _MSC_VER
-#pragma warning (disable: 4996)
+#pragma warning (disable: 28193 4996)
 #endif // _MSC_VER
 
-void shSerialSleep(uint32_t ms) {
+
+
+void shSerialSleep(
+	uint32_t ms
+) {
 #ifdef _WIN32
 	Sleep(ms);
 #else
@@ -21,112 +29,359 @@ void shSerialSleep(uint32_t ms) {
 #endif
 }
 
-uint8_t shSerialOpen(const char* port, const uint16_t baud_rate, const uint32_t read_timeout_ms, const ShSerialFlags flags, ShSerialHandle* p_handle) {
+uint8_t shSerialOpen(
+	char*           port, 
+	uint32_t        baud_rate, 
+	uint32_t        read_timeout_ms, 
+	ShSerialFlags   flags, 
+	ShSerialHandle* p_handle
+) {
+	shSerialError(
+		p_handle == NULL,
+		"shSerialOpen: invalid handle memory",
+		return 0
+	);
+
+	shSerialError(
+		port == NULL,
+		"shSerialOpen: invalid port memory",
+		return 0
+	);
+
+
+
 #ifdef _WIN32
-	char _port[10] = "\\\\.\\";
+
+	BOOL r         = 0;
+	char _port[32] = "\\\\.\\";
+	
 	strcat(_port, port);
-	p_handle->_handle = CreateFile(_port, flags, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (p_handle->_handle == INVALID_HANDLE_VALUE) {
-#ifndef NDEBUG
-		printf("ShSerial error, handle %p: cannot open serial port %s\n", p_handle, port);
-#endif // NDEBUG
-		return 0;
-	}
-	DCB dcb = { 0 };
-	dcb.DCBlength = sizeof(DCB);
-	if (!shSerialCheckResult(p_handle, GetCommState(p_handle->_handle, &dcb), "cannot set comm state")) { return 0; }
-	dcb.BaudRate = baud_rate;
-	dcb.ByteSize = 8;
-	dcb.StopBits = ONESTOPBIT;
-	dcb.Parity = NOPARITY;
-	if (!shSerialCheckResult(p_handle, SetCommState(p_handle->_handle, &dcb), "cannot set communication state")) { return 0; }
-	COMMTIMEOUTS timeout = { 0 };
-	timeout.ReadIntervalTimeout = read_timeout_ms;		
-	timeout.ReadTotalTimeoutMultiplier = 1;			
-	timeout.ReadTotalTimeoutConstant = 0;	
-	timeout.WriteTotalTimeoutConstant = 0;
-    timeout.WriteTotalTimeoutMultiplier = 1;
-	if (!shSerialCheckResult(p_handle, SetCommTimeouts(p_handle->_handle, &timeout), "cannot set timeouts")) { return 0; }
-	shSerialCheckResult(p_handle, shSerialSetReceiveMask(SH_SERIAL_EV_RXCHAR, p_handle), "error setting receive mask");
+
+	(*p_handle) = CreateFile(
+		_port,                 //lpFileName
+		flags,                 //dwDesiredAccess
+		0,                     //dwShareMode
+		NULL,                  //lpSecurityAttributes
+		OPEN_EXISTING,         //dwCreationDisposition
+		0,                     //dwFlagsAndAttributes
+		NULL                   //hTemplateFile
+	);
+	
+	shSerialError(
+		(*p_handle) == INVALID_HANDLE_VALUE,
+		"shSerialOpen: cannot open serial port",
+		return 0
+	);
+
+	DCB src_dcb = { 0 };
+
+	r = GetCommState(
+		(*p_handle), //hFile
+		&src_dcb     //lpDCB
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed getting current device control block",
+		return 0
+	);
+
+	src_dcb.BaudRate = baud_rate;
+	src_dcb.StopBits = ONESTOPBIT;
+	src_dcb.Parity   = NOPARITY;
+	src_dcb.ByteSize = 8;
+
+	r = SetCommState(
+		(*p_handle), //hFile
+		&src_dcb     //lpDCB
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting device control block",
+		return 0
+	);
+
+	COMMTIMEOUTS timeout = {
+		read_timeout_ms, //ReadIntervalTimeout
+		1,               //ReadTotalTimeoutMultiplier
+		1,               //ReadTotalTimeoutConstant
+		1,               //WriteTotalTimeoutMultiplier
+		1                //WriteTotalTimeoutConstant
+	};
+	
+	r = SetCommTimeouts(
+		(*p_handle), //hFile
+		&timeout     //lpCommTimeouts
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: cannot set timeouts",
+		return 0
+	);
+
 #else
-  	p_handle->fd = open(port, flags | O_NOCTTY);
-	if (!shSerialCheckResult(p_handle, p_handle->fd, "cannot open serial port")) {
-		return 0;
-	}
-	struct termios conf = { 0 };
-	tcgetattr(p_handle->fd, &conf);
-	cfsetispeed(&conf, baud_rate);
-	cfsetospeed(&conf, baud_rate);
-	conf.c_cflag     &=  ~PARENB;            // Make 8n1
-	conf.c_cflag     &=  ~CSTOPB;
-	conf.c_cflag     &=  ~CSIZE;
-	conf.c_cflag     |=  CS8;
-	conf.c_cflag     &=  ~CRTSCTS;           // no flow control
-	conf.c_cc[VMIN]   =  1;                  // read doesn't block
-	conf.c_cc[VTIME]  =  (int)((float)read_timeout_ms / 100.0f); // 0.5 seconds read timeout
-	conf.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
-	cfmakeraw(&conf);
-	tcflush(p_handle->fd, TCIFLUSH);
-	tcsetattr(p_handle->fd, TCSANOW, &conf);
-#endif // _WIN32
+
+	int r = 0;
+
+	(*p_handle) = open(
+		port,            //pathname
+		flags | O_NOCTTY //flags
+	);
+
+	shSerialError(
+		(*p_handle) == INVALID_HANDLE_VALUE,
+		"shSerialOpen: cannot open serial port",
+		return 0
+	);
+
+	struct termios dcb = { 0 };
+
+	r = tcgetattr(
+		(*p_handle), //fd 
+		&dcb         //termios_p
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed getting current device control block",
+		return 0
+	);
+
+	r = cfsetispeed(
+		&dcb,     //termios_p
+		baud_rate //speed
+	);
+	
+	r += cfsetospeed(
+		&dcb,     //termios_p
+		baud_rate //speed
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting baud rate",
+		return 0
+	);
+
+	dsb.c_cflag     &=  ~PARENB;            // Make 8n1
+	dsb.c_cflag     &=  ~CSTOPB;
+	dsb.c_cflag     &=  ~CSIZE;
+	dsb.c_cflag     |=  CS8;
+	dsb.c_cflag     &=  ~CRTSCTS;           // no flow control
+	dsb.c_cc[VMIN]   =  1;                  // read doesn't block
+	dsb.c_cc[VTIME]  =  (int)((float)read_timeout_ms / 100.0f); // 0.5 seconds read timeout
+	dsb.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+	
+	r = cfmakeraw(
+		&dcb //termios_p
+	);
+	
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting device control block",
+		return 0
+	);
+
+	r = tcflush(
+		(*p_handle), //fd
+		TCIFLUSH     //queue_selector
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting queue selector",
+		return 0
+	);
+	
+	r = tcsetattr(
+		(*p_handle), //fd
+		TCSANOW,     //optional_actions
+		&dcb         //termios_p
+	);
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting device control block",
+		return 0
+	);
+
+#endif//WIN32
+
 	return 1;
 }
 
-uint16_t shSerialClose(ShSerialHandle* p_handle) {
+uint8_t shSerialClose(
+	ShSerialHandle handle
+) {
+	shSerialError(
+		handle == SH_SERIAL_NULL_HANDLE,
+		"shSerialRead: invalid handle memory",
+		return 0
+	);
+
+
 #ifdef _WIN32
-	return shSerialCheckResult(p_handle, CloseHandle(p_handle->_handle), "cannot close serial port");
+
+	BOOL r = 0;
+
+	r = CloseHandle(handle);
+
 #else
-	return shSerialCheckResult(p_handle, close(p_handle->fd), "cannot close serial port");
-#endif // _WIN32
-}
 
-uint16_t shSerialReadBuffer(const uint32_t size, void* dst, unsigned long* bytes_read, ShSerialHandle* p_handle) {
-#ifdef _WIN32
-	return shSerialCheckResult(p_handle, ReadFile(p_handle->_handle, dst, size, bytes_read, NULL), "cannot read from serial port");
-#else
-	return shSerialCheckResult(p_handle, read(p_handle->fd, dst, size), "cannot read from serial port");
-#endif // _WIN32
-}
+	int r = 0;
 
+	r = close(handle);
 
-#ifdef _WIN32
-uint16_t shSerialSetReceiveMask(ShSerialCommMask mask, ShSerialHandle* p_handle) {
-	if (!shSerialCheckResult(p_handle, SetCommMask(p_handle->_handle, mask), "cannot set receive mask")) { 
-		return 0; 
-	} 
-  	DWORD event_mask = 0;
-	//for some reason waits indefinitely here sometimes
-	return shSerialCheckResult(p_handle, WaitCommEvent(p_handle->_handle, &event_mask, NULL), "cannot set waiting comm event");
-}
-#endif // _WIN32
+#endif//_WIN32
 
-uint16_t shSerialWriteBuffer(const uint32_t size, void* src, unsigned long* p_bytes_written, ShSerialHandle* p_handle) {
-#ifdef _WIN32
-	return shSerialCheckResult(p_handle, WriteFile(p_handle->_handle, src, size, p_bytes_written, NULL), "cannot write to serial port");
-#else
-	return shSerialCheckResult(p_handle, write(p_handle->fd, src, size), "cannot write to serial port");
-#endif // _WIN32
-}
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialRead: failed closing serial port",
+		return 0
+	);
 
-
-uint16_t shSerialCheckResult(ShSerialHandle* p_handle, const int result, const char* msg) {
-#ifdef _WIN32
-	if (!result) {
-#else
-	if (result < 0) {
-#endif
-#ifndef NDEBUG
-		printf("ShSerial error, handle 0x%p: %s, %s\n", p_handle, msg, shSerialGetError());
-#endif // NDEBUG
-		return 0;		
-	}
 	return 1;
 }
 
-const char* shSerialGetError() {
+uint8_t shSerialRead(
+	uint32_t       size, 
+	void*          dst,
+	uint32_t*      p_bytes_read,
+	ShSerialHandle handle
+) {
+	shSerialError(
+		handle == SH_SERIAL_NULL_HANDLE,
+		"shSerialRead: invalid handle memory",
+		return 0
+	);
+
+	shSerialError(
+		size == 0,
+		"shSerialRead: invalid read size",
+		return 0
+	)
+
+	shSerialError(
+		dst == NULL,
+		"shSerialRead: invalid dst memory",
+		return 0
+	)
+
+#ifdef _WIN32
+
+	BOOL  r          = 0;
+	DWORD bytes_read = 0;
+
+	r = ReadFile(
+		handle,      //hFile
+		dst,         //lpBuffer
+		size,        //nNumberOfBytesToRead
+		&bytes_read, //lpNumberOfBytesRead
+		NULL         //lpOverlapped
+	);
+
+#else
+
+	uint8_t  r          = 1;
+	uint32_t bytes_read = 0;
+
+	bytes_read = (uint32_t)read(
+		p_handle, //
+		dst,      //
+		size      //
+	);
+
+#endif//_WIN32
+
+	if (p_bytes_read != NULL) {
+		(*p_bytes_read) = (uint32_t)bytes_read;
+	}
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialRead: failed reading from serial port",
+		return 0
+	);
+
+	return 1;
+}
+
+uint8_t shSerialWrite(
+	uint32_t        size, 
+	void*           src, 
+	uint32_t*       p_bytes_written,
+	ShSerialHandle* handle
+) {
+	shSerialError(
+		handle == SH_SERIAL_NULL_HANDLE,
+		"shSerialWrite: invalid handle memory",
+		return 0
+	);
+
+	shSerialError(
+		size == 0,
+		"shSerialWrite: invalid read size",
+		return 0
+	)
+
+	shSerialError(
+		src == NULL,
+		"shSerialWrite: invalid dst memory",
+		return 0
+	)
+
+
+#ifdef _WIN32
+
+	BOOL  r             = 0;
+	DWORD bytes_written = 0;
+
+	bytes_written = WriteFile(
+		handle,         //hFile
+		src,            //lpBuffer
+		size,           //nNumberOfBytesToWrite
+		&bytes_written, //lpNumberOfBytesWritten
+		NULL            //lpOverlapped
+	);
+
+#else
+
+	uint8_t  r             = 1;
+	uint32_t bytes_written = 0;
+
+	bytes_written = (uint32_t)write(
+		p_handle, //
+		src,      //
+		size      //
+	);
+
+#endif // _WIN32
+
+	if (p_bytes_written != 0) {
+		(*p_bytes_written) = (uint32_t)bytes_written;
+	}
+
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialWrite: failed writing to serial port",
+		return 0
+	);
+
+	return 1;
+}
+
+char* shSerialGetError() {
 #ifdef _WIN32
 	return "unknown error";
 #else
 	return strerror(errno);
 #endif // _WIN32
 }
+
+
+
+#ifdef __cplusplus
+}
+#endif//__cplusplus

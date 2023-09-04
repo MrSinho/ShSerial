@@ -1,25 +1,3 @@
-# shserial
-
-A simple Windows and Unix serial communication library using the win32 api and posix, written in C.
-
-[![linux_badge](.ShCI/linux-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/linux-log.md)
-[![windows_badge](.ShCI/windows-status.svg)](https://github.com/MrSinho/ShSerial/tree/main/.ShCI/windows-log.md)
-
-## Getting started
-
-```bash
-git clone https://github.com/mrsinho/shserial.git
-mkdir build 
-cd build
-cmake -DSH_SERIAL_BUILD_LOGGER=ON ..
-cmake --build .
-```
-
-## Example:
-
-See the logger example [here](logger/src/logger.c)
-
-```c
 #ifdef __cplusplus
 extern "C" {
 #endif//__cplusplus
@@ -100,4 +78,3 @@ int main(
 #ifdef __cplusplus
 }
 #endif//__cplusplus
-```
