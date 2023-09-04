@@ -103,10 +103,10 @@ extern uint8_t shSerialOpen(
 );
 
 extern uint8_t shSerialWrite(
-	uint32_t        size, 
-	void*           src, 
-	uint32_t*       p_bytes_written,
-	ShSerialHandle  handle
+	uint32_t       size, 
+	void*          src, 
+	uint32_t*      p_bytes_written,
+	ShSerialHandle handle
 );
 
 extern uint8_t shSerialRead(
