@@ -61,7 +61,7 @@ typedef HANDLE ShSerialHandle;
 
 #else
 
-typedef int ShSerialHandle
+typedef int ShSerialHandle;
 #define SH_SERIAL_NULL_HANDLE 0
 
 #endif//_WIN32
