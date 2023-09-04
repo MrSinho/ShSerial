@@ -309,10 +309,10 @@ uint8_t shSerialRead(
 }
 
 uint8_t shSerialWrite(
-	uint32_t        size, 
-	void*           src, 
-	uint32_t*       p_bytes_written,
-	ShSerialHandle* handle
+	uint32_t       size, 
+	void*          src, 
+	uint32_t*      p_bytes_written,
+	ShSerialHandle handle
 ) {
 	shSerialError(
 		handle == SH_SERIAL_NULL_HANDLE,
@@ -352,9 +352,9 @@ uint8_t shSerialWrite(
 	uint32_t bytes_written = 0;
 
 	bytes_written = (uint32_t)write(
-		p_handle, //
-		src,      //
-		size      //
+		handle, //fd
+		src,    //
+		size    //
 	);
 
 #endif // _WIN32
