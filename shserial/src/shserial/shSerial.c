@@ -342,7 +342,7 @@ uint8_t shSerialWrite(
 
 #else
 
-	int8     r             = 1;
+	int      r             = 1;
 	uint32_t bytes_written = 0;
 
 	bytes_written = (uint32_t)write(
