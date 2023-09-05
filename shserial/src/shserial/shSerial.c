@@ -154,14 +154,20 @@ uint8_t shSerialOpen(
 		baud_rate //speed
 	);
 	
-	r += cfsetospeed(
+	shSerialError(
+		shSerialBadResult(r),
+		"shSerialOpen: failed setting input baud rate",
+		return 0
+	);
+
+	r = cfsetospeed(
 		&dcb,     //termios_p
 		baud_rate //speed
 	);
 
 	shSerialError(
 		shSerialBadResult(r),
-		"shSerialOpen: failed setting baud rate",
+		"shSerialOpen: failed setting output baud rate",
 		return 0
 	);
 
