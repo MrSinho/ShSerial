@@ -288,9 +288,9 @@ uint8_t shSerialRead(
 	uint32_t bytes_read = 0;
 
 	bytes_read = (uint32_t)read(
-		p_handle, //
-		dst,      //
-		size      //
+		handle, //fd
+		dst,    //
+		size    //
 	);
 
 #endif//_WIN32
