@@ -165,14 +165,14 @@ uint8_t shSerialOpen(
 		return 0
 	);
 
-	dsb.c_cflag     &=  ~PARENB;            // Make 8n1
-	dsb.c_cflag     &=  ~CSTOPB;
-	dsb.c_cflag     &=  ~CSIZE;
-	dsb.c_cflag     |=  CS8;
-	dsb.c_cflag     &=  ~CRTSCTS;           // no flow control
-	dsb.c_cc[VMIN]   =  1;                  // read doesn't block
-	dsb.c_cc[VTIME]  =  (int)((float)read_timeout_ms / 100.0f); // 0.5 seconds read timeout
-	dsb.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+	dcb.c_cflag     &=  ~PARENB;            // Make 8n1
+	dcb.c_cflag     &=  ~CSTOPB;
+	dcb.c_cflag     &=  ~CSIZE;
+	dcb.c_cflag     |=  CS8;
+	dcb.c_cflag     &=  ~CRTSCTS;           // no flow control
+	dcb.c_cc[VMIN]   =  1;                  // read doesn't block
+	dcb.c_cc[VTIME]  =  (int)((float)read_timeout_ms / 100.0f); // 0.5 seconds read timeout
+	dcb.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 	
 	r = cfmakeraw(
 		&dcb //termios_p
