@@ -68,7 +68,7 @@ uint8_t shSerialOpen(
 	);
 	
 	shSerialError(
-		(*p_handle) == INVALID_HANDLE_VALUE,
+		(*p_handle) == SH_SERIAL_NULL_HANDLE,
 		"shSerialOpen: cannot open serial port",
 		return 0
 	);
@@ -131,7 +131,7 @@ uint8_t shSerialOpen(
 	);
 
 	shSerialError(
-		(*p_handle) == INVALID_HANDLE_VALUE,
+		(*p_handle) == SH_SERIAL_NULL_HANDLE,
 		"shSerialOpen: cannot open serial port",
 		return 0
 	);
