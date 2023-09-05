@@ -27,11 +27,11 @@ int main(
     }
 
     r = shSerialOpen(
-        port,                 //port
-        9600,                 //baud_rate
-        500,                  //read_timeout_ms
-        SH_SERIAL_READ_WRITE, //flags
-        &handle               //p_handle
+        port,                     //port
+        SH_SERIAL_BAUD_RATE_9600, //baud_rate
+        500,                      //read_timeout_ms
+        SH_SERIAL_READ_WRITE,     //flags
+        &handle                   //p_handle
     );
     
     shSerialError(

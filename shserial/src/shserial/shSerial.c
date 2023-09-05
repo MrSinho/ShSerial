@@ -30,11 +30,11 @@ void shSerialSleep(
 }
 
 uint8_t shSerialOpen(
-	char*           port, 
-	uint32_t        baud_rate, 
-	uint32_t        read_timeout_ms, 
-	ShSerialFlags   flags, 
-	ShSerialHandle* p_handle
+	char*            port, 
+	ShSerialBaudRate baud_rate,
+	uint32_t         read_timeout_ms, 
+	ShSerialFlags    flags, 
+	ShSerialHandle*  p_handle
 ) {
 	shSerialError(
 		p_handle == NULL,
@@ -85,8 +85,8 @@ uint8_t shSerialOpen(
 		"shSerialOpen: failed getting current device control block",
 		return 0
 	);
-
-	src_dcb.BaudRate = baud_rate;
+	
+	src_dcb.BaudRate = (DWORD)baud_rate;
 	src_dcb.StopBits = ONESTOPBIT;
 	src_dcb.Parity   = NOPARITY;
 	src_dcb.ByteSize = 8;
@@ -150,8 +150,8 @@ uint8_t shSerialOpen(
 	);
 
 	r = cfsetispeed(
-		&dcb,     //termios_p
-		baud_rate //speed
+		&dcb,              //termios_p
+		(speed_t)baud_rate //speed
 	);
 	
 	shSerialError(
@@ -161,8 +161,8 @@ uint8_t shSerialOpen(
 	);
 
 	r = cfsetospeed(
-		&dcb,     //termios_p
-		baud_rate //speed
+		&dcb,              //termios_p
+		(speed_t)baud_rate //speed
 	);
 
 	shSerialError(
