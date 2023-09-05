@@ -23,9 +23,9 @@ extern "C" {
 
 
 #ifdef _WIN32
-	#define shSerialBadResult(result) (result < 1)
+	#define shSerialBadResult(result) ((result) < 1)
 #else
-	#define shSerialBadResult(result) (result < 0)
+	#define shSerialBadResult(result) ((result) < 0)
 #endif//_WIN32
 
 
