@@ -1,0 +1,12 @@
+-- Selecting Windows SDK version 10.0.22000.0 to target Windows 10.0.22621.
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: D:/home/desktop/GitHub/shserial/windows
+MSBuild version 17.6.3+07e294721 for .NET Framework
+
+  Checking Build System
+  Building Custom Rule D:/home/desktop/GitHub/shserial/CMakeLists.txt
+  shserial.vcxproj -> D:\home\desktop\GitHub\shserial\bin\Debug\shserial.lib
+  Building Custom Rule D:/home/desktop/GitHub/shserial/CMakeLists.txt
+  shserial-logger.vcxproj -> D:\home\desktop\GitHub\shserial\bin\Debug\shserial-logger.exe
+  Building Custom Rule D:/home/desktop/GitHub/shserial/CMakeLists.txt
