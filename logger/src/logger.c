@@ -58,7 +58,7 @@ int main(
         );
 
         if (bytes_read != 0) {
-            printf(msg);
+            printf("%s", msg);
         }
 
         bytes_read = 0;
