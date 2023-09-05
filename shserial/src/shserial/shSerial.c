@@ -174,14 +174,8 @@ uint8_t shSerialOpen(
 	dcb.c_cc[VTIME]  =  (int)((float)read_timeout_ms / 100.0f); // 0.5 seconds read timeout
 	dcb.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 	
-	r = cfmakeraw(
+	cfmakeraw(
 		&dcb //termios_p
-	);
-	
-	shSerialError(
-		shSerialBadResult(r),
-		"shSerialOpen: failed setting device control block",
-		return 0
 	);
 
 	r = tcflush(
